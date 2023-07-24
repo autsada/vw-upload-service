@@ -1,0 +1,8 @@
+dist
+node_modules
+.dockerignore
+.env
+.env.test
+.env.prod
+gcp.txt
+.DS_Store
