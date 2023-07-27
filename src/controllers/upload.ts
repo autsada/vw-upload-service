@@ -27,7 +27,11 @@ export async function uploadVideo({
     // Upload the video to Cloud storage
     // Construct destination path for the image to be saved on cloud storage
     // Path will be in the form of `publishes/{profile_name}/publishId/{filename}.mp4` and this is unique.
-    const destinationParentPath = path.join("publishes", profileName, publishId)
+    const destinationParentPath = path.join(
+      "publishes",
+      profileName.toLowerCase(),
+      publishId
+    )
     const videoContentDestination = path.join(destinationParentPath, filename)
     await bucket.upload(inputFilePath, {
       destination: videoContentDestination,
