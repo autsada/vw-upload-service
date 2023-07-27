@@ -56,16 +56,44 @@ router.post("/video", auth, uploadDisk, (req, res) => {
 /**
  * Delete publish's files in cloud storage
  */
-router.post("/delete", auth, (req, res) => {
+router.post("/delete/files", auth, (req, res) => {
   const { ref, publishId } = req.body as { ref: string; publishId: string }
 
-  if (!ref || !publishId) {
+  if (!ref) {
     res.status(400).json({ error: "Bad request" })
   } else {
     pool
       .proxy()
       .then(function (worker) {
         return worker.deleteFiles(ref, publishId)
+      })
+      .then(function (result) {
+        res.status(200).json(result)
+      })
+      .catch(function (err) {
+        res
+          .status(err.status || 500)
+          .send(err.message || "Something went wrong")
+      })
+      .then(function () {
+        pool.terminate() // terminate all workers when done
+      })
+  }
+})
+
+/**
+ * Delete a file
+ */
+router.post("/delete/file", auth, (req, res) => {
+  const { ref } = req.body as { ref: string }
+
+  if (!ref) {
+    res.status(400).json({ error: "Bad request" })
+  } else {
+    pool
+      .proxy()
+      .then(function (worker) {
+        return worker.deleteFile(ref)
       })
       .then(function (result) {
         res.status(200).json(result)

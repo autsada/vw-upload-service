@@ -45,11 +45,11 @@ export async function uploadVideo({
 }
 
 /**
- * @param ref - a directory that contains the publish's files, it is in the format `publishes/<name>/<publish_id>/`
+ * @param ref - a directory that contains the files, it is in the format `publishes/<name>/<publish_id>/`
  * @param publishId - a publish id to be deleted
  * @returns
  */
-export async function deleteFiles(ref: string, publishId: string) {
+export async function deleteFiles(ref: string, publishId?: string) {
   try {
     if (!ref) throw { status: 400, message: "Bad request" }
 
@@ -64,23 +64,28 @@ export async function deleteFiles(ref: string, publishId: string) {
 
     // TODO: Publish a notification to inform relevant services (using pub/sub)
 
-    // // Call the Gateway Service webhook to delete the publish in the database.
-    // const baseURL =
-    //   env === "development" ? "http://localhost:4000" : GATEWAY_SERVICE_URL!
-    // const token =
-    //   env === "development" ? "" : await authClient.getIdToken(baseURL)
+    return { status: "Ok" }
+  } catch (error) {
+    throw error
+  }
+}
 
-    // // 1. Get a publish id from the publishRef --> "publishes/<name>/<publish_id>/"
-    // const refs = publishRef.split("/")
-    // const publishId = refs.length > 2 ? refs[refs.length - 2] : ""
-    // await axios({
-    //   method: "DELETE",
-    //   url: `${baseURL}/webhooks/publishes/${publishId}`,
-    //   headers: {
-    //     Authorization: token ? `Bearer ${token}` : undefined,
-    //     "upload-signature": UPLOAD_SIGNATURE || "",
-    //   },
-    // })
+/**
+ * @param ref - a path to the file to be deleted
+ * @returns
+ */
+export async function deleteFile(ref: string) {
+  try {
+    if (!ref) throw { status: 400, message: "Bad request" }
+
+    // Add try/catch so if there is an error here the code will still continue
+    try {
+      await bucket.file(ref).delete()
+    } catch (error) {
+      console.error(error)
+    }
+
+    // TODO: Publish a notification to inform relevant services (using pub/sub)
 
     return { status: "Ok" }
   } catch (error) {
