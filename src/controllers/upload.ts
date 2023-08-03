@@ -1,9 +1,18 @@
 import path from "path"
 import { promisify } from "util"
 import fs from "fs"
+import axios from "axios"
 
 import { bucket } from "../firebase/config"
+import { publishMessage } from "../pubsub"
 import type { UploadVideoArgs } from "../types"
+
+const {
+  CLOUDFLAR_BASE_URL,
+  CLOUDFLARE_ACCOUNT_ID,
+  CLOUDFLARE_API_TOKEN,
+  VIDEO_DELETION_TOPIC,
+} = process.env
 
 export async function uploadVideo({
   profileName,
@@ -50,12 +59,18 @@ export async function uploadVideo({
 
 /**
  * @param ref - a directory that contains the files, it is in the format `publishes/<name>/<publish_id>/`
- * @param publishId - a publish id to be deleted
+ * @param publishId - a publish id
+ * @param playbackId - a playback id of the video
  * @returns
  */
-export async function deleteFiles(ref: string, publishId?: string) {
+export async function deleteVideo(
+  ref: string,
+  publishId: string,
+  videoId: string
+) {
   try {
-    if (!ref) throw { status: 400, message: "Bad request" }
+    if (!ref || !publishId || !videoId)
+      throw { status: 400, message: "Bad request" }
 
     // Add try/catch so if there is an error here the code will still continue
     try {
@@ -66,7 +81,17 @@ export async function deleteFiles(ref: string, publishId?: string) {
       console.error(error)
     }
 
-    // TODO: Publish a notification to inform relevant services (using pub/sub)
+    // Delete (without waiting) the video on Cloudflare stream
+    await axios({
+      method: "DELETE",
+      url: `${CLOUDFLAR_BASE_URL}/${CLOUDFLARE_ACCOUNT_ID}/stream/${videoId}`,
+      headers: {
+        Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
+      },
+    })
+
+    // Publish a notification to inform relevant services (using pub/sub)
+    await publishMessage(VIDEO_DELETION_TOPIC!, publishId)
 
     return { status: "Ok" }
   } catch (error) {
@@ -75,10 +100,10 @@ export async function deleteFiles(ref: string, publishId?: string) {
 }
 
 /**
- * @param ref - a path to the file to be deleted
+ * @param ref - a path to the image to be deleted
  * @returns
  */
-export async function deleteFile(ref: string) {
+export async function deleteImage(ref: string) {
   try {
     if (!ref) throw { status: 400, message: "Bad request" }
 
@@ -88,8 +113,6 @@ export async function deleteFile(ref: string) {
     } catch (error) {
       console.error(error)
     }
-
-    // TODO: Publish a notification to inform relevant services (using pub/sub)
 
     return { status: "Ok" }
   } catch (error) {

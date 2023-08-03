@@ -54,18 +54,22 @@ router.post("/video", auth, uploadDisk, (req, res) => {
 })
 
 /**
- * Delete publish's files in cloud storage
+ * Delete video files (including thumbnail) in cloud storage
  */
-router.post("/delete/files", auth, (req, res) => {
-  const { ref, publishId } = req.body as { ref: string; publishId: string }
+router.delete("/video", auth, (req, res) => {
+  const { ref, publishId, videoId } = req.body as {
+    ref: string
+    publishId: string
+    videoId: string
+  }
 
-  if (!ref) {
+  if (!ref || !publishId || !videoId) {
     res.status(400).json({ error: "Bad request" })
   } else {
     pool
       .proxy()
       .then(function (worker) {
-        return worker.deleteFiles(ref, publishId)
+        return worker.deleteVideo(ref, publishId, videoId)
       })
       .then(function (result) {
         res.status(200).json(result)
@@ -82,9 +86,9 @@ router.post("/delete/files", auth, (req, res) => {
 })
 
 /**
- * Delete a file
+ * Delete an image from cloud storage
  */
-router.post("/delete/file", auth, (req, res) => {
+router.delete("/image", auth, (req, res) => {
   const { ref } = req.body as { ref: string }
 
   if (!ref) {
@@ -93,7 +97,7 @@ router.post("/delete/file", auth, (req, res) => {
     pool
       .proxy()
       .then(function (worker) {
-        return worker.deleteFile(ref)
+        return worker.deleteImage(ref)
       })
       .then(function (result) {
         res.status(200).json(result)

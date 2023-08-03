@@ -6,3 +6,4 @@ node_modules
 .env.prod
 gcp.txt
 .DS_Store
+serviceAccount.json
