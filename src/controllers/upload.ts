@@ -5,6 +5,7 @@ import axios from "axios"
 
 import { bucket } from "../firebase/config"
 import { publishMessage } from "../pubsub"
+import { encryptString } from "../middlewares/crypto"
 import type { UploadVideoArgs } from "../types"
 
 const {
@@ -81,7 +82,7 @@ export async function deleteVideo(
       console.error(error)
     }
 
-    // Delete (without waiting) the video on Cloudflare stream
+    // Delete the video on Cloudflare stream
     await axios({
       method: "DELETE",
       url: `${CLOUDFLAR_BASE_URL}/${CLOUDFLARE_ACCOUNT_ID}/stream/${videoId}`,
@@ -91,7 +92,9 @@ export async function deleteVideo(
     })
 
     // Publish a notification to inform relevant services (using pub/sub)
-    await publishMessage(VIDEO_DELETION_TOPIC!, publishId)
+    // Encrypt publishId for security
+    const message = encryptString(publishId)
+    await publishMessage(VIDEO_DELETION_TOPIC!, message)
 
     return { status: "Ok" }
   } catch (error) {
