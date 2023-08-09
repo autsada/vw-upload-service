@@ -1,19 +1,13 @@
 import path from "path"
 import { promisify } from "util"
 import fs from "fs"
-import axios from "axios"
 
 import { bucket } from "../firebase/config"
 import { publishMessage } from "../pubsub"
 import { encryptString } from "../middlewares/crypto"
 import type { UploadVideoArgs } from "../types"
 
-const {
-  CLOUDFLAR_BASE_URL,
-  CLOUDFLARE_ACCOUNT_ID,
-  CLOUDFLARE_API_TOKEN,
-  VIDEO_DELETION_TOPIC,
-} = process.env
+const { VIDEO_DELETION_TOPIC } = process.env
 
 export async function uploadVideo({
   profileName,
@@ -64,14 +58,9 @@ export async function uploadVideo({
  * @param playbackId - a playback id of the video
  * @returns
  */
-export async function deleteVideo(
-  ref: string,
-  publishId: string,
-  videoId: string
-) {
+export async function deleteVideo(ref: string, publishId: string) {
   try {
-    if (!ref || !publishId || !videoId)
-      throw { status: 400, message: "Bad request" }
+    if (!ref || !publishId) throw { status: 400, message: "Bad request" }
 
     // Add try/catch so if there is an error here the code will still continue
     try {
@@ -81,15 +70,6 @@ export async function deleteVideo(
     } catch (error) {
       console.error(error)
     }
-
-    // Delete the video on Cloudflare stream
-    await axios({
-      method: "DELETE",
-      url: `${CLOUDFLAR_BASE_URL}/${CLOUDFLARE_ACCOUNT_ID}/stream/${videoId}`,
-      headers: {
-        Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
-      },
-    })
 
     // Publish a notification to inform relevant services (using pub/sub)
     // Encrypt publishId for security
