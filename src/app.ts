@@ -10,6 +10,7 @@ import http from "http"
 import { router } from "./routes"
 
 const { PORT } = process.env
+const port = PORT || 4444
 
 const app = express()
 app.use(express.json()) // for parsing application/json
@@ -35,6 +36,6 @@ app.use("/upload", router)
 // Create the HTTP server
 const httpServer = http.createServer(app)
 
-httpServer.listen({ port: PORT || 4444 }, () => {
-  console.log(`Server ready at port: ${PORT}`)
+httpServer.listen({ port }, () => {
+  console.log(`Server ready at port: ${port}`)
 })
