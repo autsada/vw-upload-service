@@ -10,7 +10,7 @@ import http from "http"
 import { router } from "./routes"
 
 const { PORT } = process.env
-const port = PORT || 4444
+const port = Number(PORT || 4444)
 
 const app = express()
 app.use(express.json()) // for parsing application/json
