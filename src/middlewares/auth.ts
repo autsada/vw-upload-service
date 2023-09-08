@@ -4,7 +4,7 @@ import axios from "axios"
 import { authClient } from "../authClient"
 import type { Environment } from "../types"
 
-const { NODE_ENV, WALLET_SERVICE_URL } = process.env
+const { NODE_ENV, PRIVATE_SERVICE_URL } = process.env
 
 const env = NODE_ENV as Environment
 
@@ -17,7 +17,7 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
     } else {
       // Call the Wallet Service to verify id token
       const baseURL =
-        env === "development" ? "http://localhost:8000" : WALLET_SERVICE_URL!
+        env === "development" ? "http://localhost:8000" : PRIVATE_SERVICE_URL!
       // The token for use to authenticate between services in GCP
       const token =
         env === "development" ? "" : await authClient.getIdToken(baseURL)

@@ -7,6 +7,8 @@ import {
 } from "firebase-admin/app"
 import { getStorage } from "firebase-admin/storage"
 
+import type { Environment } from "../types"
+
 const {
   NODE_ENV,
   FIREBASE_PROJECT_ID,
@@ -15,11 +17,13 @@ const {
   FIREBASE_STORAGE_BUCKET,
 } = process.env
 
+const env = NODE_ENV as Environment
+
 function initializeFirebaseAdmin() {
   return !getApps.length
     ? initializeApp({
         credential:
-          NODE_ENV === "production" || NODE_ENV === "test"
+          env === "production" || env === "test"
             ? applicationDefault()
             : admin.credential.cert({
                 projectId: FIREBASE_PROJECT_ID,

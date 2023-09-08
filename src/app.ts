@@ -17,20 +17,6 @@ app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.use(cors())
 
-/**
- * This route is for testing only
- */
-// =============
-app.get("/test", async (req, res, next) => {
-  try {
-    res.status(200).json({ status: "Ok" })
-  } catch (error) {
-    console.log("error: ", error)
-    next(error)
-  }
-})
-// =============
-
 app.use("/upload", router)
 
 // Create the HTTP server
