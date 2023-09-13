@@ -2,13 +2,8 @@ steps:
   # Build an image
   - id: "docker-build"
     name: "gcr.io/cloud-builders/docker"
-    args:
-      [
-        "build",
-        "-t",
-        "${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}",
-        ".",
-      ]
+    args: ["build", "-t", "${_IMAGE_NAME}", "."]
+
 # Push the image to artifact registry
 images:
-  - "${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}"
+  - "${_IMAGE_NAME}"
