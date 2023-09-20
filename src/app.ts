@@ -17,6 +17,10 @@ app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.use(cors())
 
+app.post("/test", (req, res) => {
+  console.log("test -->")
+  res.status(200).json({ status: "Ok" })
+})
 app.use("/upload", router)
 
 // Create the HTTP server
