@@ -18,11 +18,9 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
       // Call the Wallet Service to verify id token
       const baseURL =
         env === "development" ? "http://localhost:8000" : PRIVATE_SERVICE_URL!
-      console.log("base url -->", baseURL)
       // The token for use to authenticate between services in GCP
       const token =
         env === "development" ? "" : await authClient.getIdToken(baseURL)
-      console.log("token -->", token)
       const result = await axios<{ uid: string }>({
         method: "GET",
         url: `${baseURL}/auth/verify`,
@@ -36,7 +34,6 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
       next()
     }
   } catch (error) {
-    console.log("auth error -->", error)
     next(error)
   }
 }

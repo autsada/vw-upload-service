@@ -56,7 +56,6 @@ export async function uploadVideo({
 /**
  * @param ref - a directory that contains the files, it is in the format `publishes/<name>/<publish_id>/`
  * @param publishId - a publish id
- * @param playbackId - a playback id of the video
  * @returns
  */
 export async function deleteVideo(ref: string, publishId: string) {
@@ -104,12 +103,16 @@ export async function deleteImage(ref: string) {
   }
 }
 
+/**
+ * @param profileName - a name of the profile
+ * @param file - an image to be uploaded
+ * @returns
+ */
 export async function uploadProfileImage({
   profileName,
   file,
 }: Pick<UploadVideoArgs, "profileName" | "file">) {
   try {
-    console.log("called -->")
     if (!file || !profileName) throw { status: 400, message: "Bad request" }
 
     // Only process image file
@@ -131,7 +134,6 @@ export async function uploadProfileImage({
       filename.toLowerCase().endsWith("heic") ||
       filename.toLowerCase().endsWith("heif")
     ) {
-      console.log("convert task: -->")
       // Change buffer format
       buffer = (await convert({
         buffer,
@@ -141,29 +143,26 @@ export async function uploadProfileImage({
 
       // Change file extension
       filename = filename.split(".")[0] + ".jpeg"
-      console.log("filename: -->", filename)
     }
 
     const path = `profiles/${profileName}/profile/${filename}`
-    console.log("upload task: -->", path)
     await bucket.file(path).save(buffer, {
       metadata: { contentType: "image/jpeg" },
     })
 
     const uploadedFile = bucket.file(path)
-    console.log("url task: -->")
     const urls = await uploadedFile.getSignedUrl({
       action: "read",
       expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 1000,
     })
+    const url = `firebase${urls[0]}`
 
     // Unlink temp files
     const unlink = promisify(fs.unlink)
     await unlink(inputFilePath)
 
-    return { url: urls[0], fileRef: path }
+    return { url, fileRef: path }
   } catch (error) {
-    console.log("error -->", error)
     throw error
   }
 }
