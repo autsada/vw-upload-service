@@ -130,6 +130,7 @@ export async function uploadProfileImage({
       filename.toLowerCase().endsWith("heic") ||
       filename.toLowerCase().endsWith("heif")
     ) {
+      console.log("convert task: -->")
       // Change buffer format
       buffer = (await convert({
         buffer,
@@ -139,14 +140,17 @@ export async function uploadProfileImage({
 
       // Change file extension
       filename = filename.split(".")[0] + ".jpeg"
+      console.log("filename: -->", filename)
     }
 
     const path = `profiles/${profileName}/profile/${filename}`
+    console.log("upload task: -->", path)
     await bucket.file(path).save(buffer, {
       metadata: { contentType: "image/jpeg" },
     })
 
     const uploadedFile = bucket.file(path)
+    console.log("url task: -->")
     const urls = await uploadedFile.getSignedUrl({
       action: "read",
       expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 1000,
@@ -158,6 +162,7 @@ export async function uploadProfileImage({
 
     return { url: urls[0], fileRef: path }
   } catch (error) {
+    console.log("error -->", error)
     throw error
   }
 }
