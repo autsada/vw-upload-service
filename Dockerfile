@@ -19,5 +19,5 @@ USER node
 COPY --chown=node:node --from=build /usr/src/app/package*.json ./
 COPY --chown=node:node --from=build /usr/src/app/dist ./
 RUN npm ci --omit=dev
-EXPOSE 4444
+EXPOSE 8080
 CMD ["dumb-init", "node", "src/app.js"]
