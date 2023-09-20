@@ -155,7 +155,7 @@ export async function uploadProfileImage({
       action: "read",
       expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 1000,
     })
-    const url = `firebase${urls[0]}`
+    const url = urls[0]
 
     // Unlink temp files
     const unlink = promisify(fs.unlink)
