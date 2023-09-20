@@ -109,6 +109,7 @@ export async function uploadProfileImage({
   file,
 }: Pick<UploadVideoArgs, "profileName" | "file">) {
   try {
+    console.log("called -->")
     if (!file || !profileName) throw { status: 400, message: "Bad request" }
 
     // Only process image file
