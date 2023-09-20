@@ -1,6 +1,7 @@
 import path from "path"
 import { promisify } from "util"
 import fs from "fs"
+import convert from "heic-convert"
 
 import { bucket } from "../firebase/config"
 import { publishMessage } from "../pubsub"
@@ -98,6 +99,64 @@ export async function deleteImage(ref: string) {
     }
 
     return { status: "Ok" }
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function uploadProfileImage({
+  profileName,
+  file,
+}: Pick<UploadVideoArgs, "profileName" | "file">) {
+  try {
+    if (!file || !profileName) throw { status: 400, message: "Bad request" }
+
+    // Only process image file
+    if (
+      !file.mimetype.startsWith("image/") &&
+      !file.mimetype.startsWith("application/octet-stream")
+    ) {
+      throw { status: 400, message: "Wrong file type" }
+    }
+
+    let filename = file.filename
+    const inputFilePath = file.path
+
+    const readFile = promisify(fs.readFile)
+    let buffer = await readFile(inputFilePath)
+
+    // Convert .heic or .heif to .jpeg
+    if (
+      filename.toLowerCase().endsWith("heic") ||
+      filename.toLowerCase().endsWith("heif")
+    ) {
+      // Change buffer format
+      buffer = (await convert({
+        buffer,
+        format: "JPEG",
+        quality: 1,
+      })) as Buffer
+
+      // Change file extension
+      filename = filename.split(".")[0] + ".jpeg"
+    }
+
+    const path = `profiles/${profileName}/profile/${filename}`
+    await bucket.file(path).save(buffer, {
+      metadata: { contentType: "image/jpeg" },
+    })
+
+    const uploadedFile = bucket.file(path)
+    const urls = await uploadedFile.getSignedUrl({
+      action: "read",
+      expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 1000,
+    })
+
+    // Unlink temp files
+    const unlink = promisify(fs.unlink)
+    await unlink(inputFilePath)
+
+    return { url: urls[0], fileRef: path }
   } catch (error) {
     throw error
   }

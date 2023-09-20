@@ -85,6 +85,35 @@ router.delete("/video", auth, (req, res) => {
 })
 
 /**
+ * Upload profile image
+ */
+router.post("/image", auth, uploadDisk, (req, res) => {
+  const file = req.file
+  const { profileName } = req.body as Pick<UploadVideoArgs, "profileName">
+
+  if (!file || !profileName) {
+    res.status(400).json({ error: "Bad request" })
+  } else {
+    pool
+      .proxy()
+      .then(function (worker) {
+        return worker.uploadProfileImage({ profileName, file })
+      })
+      .then(function (result) {
+        res.status(200).json(result)
+      })
+      .catch(function (err) {
+        res
+          .status(err.status || 500)
+          .send(err.message || "Something went wrong")
+      })
+      .then(function () {
+        pool.terminate() // terminate all workers when done
+      })
+  }
+})
+
+/**
  * Delete an image from cloud storage
  */
 router.delete("/image", auth, (req, res) => {
