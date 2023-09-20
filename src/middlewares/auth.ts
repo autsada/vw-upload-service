@@ -22,11 +22,12 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
       // The token for use to authenticate between services in GCP
       const token =
         env === "development" ? "" : await authClient.getIdToken(baseURL)
+      console.log("token -->", token)
       const result = await axios<{ uid: string }>({
         method: "GET",
         url: `${baseURL}/auth/verify`,
         headers: {
-          Authorization: token ? `Bearer ${token}` : undefined,
+          Authorization: token,
           "id-token": idToken,
         },
       })
