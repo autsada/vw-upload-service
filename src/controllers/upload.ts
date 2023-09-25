@@ -16,9 +16,11 @@ export async function uploadVideo({
   publishId,
 }: UploadVideoArgs) {
   try {
+    console.log("publishId -->", publishId)
     if (!file) throw { status: 400, message: "Bad request" }
 
     // Only process video file
+    console.log("type -->", file.mimetype)
     if (
       !file.mimetype.startsWith("video/") &&
       !file.mimetype.startsWith("application/octet-stream")
@@ -37,11 +39,14 @@ export async function uploadVideo({
       profileName.toLowerCase(),
       publishId
     )
+    console.log("storage path -->", destinationParentPath)
     const videoContentDestination = path.join(destinationParentPath, filename)
-    await bucket.upload(inputFilePath, {
+    const result = await bucket.upload(inputFilePath, {
       destination: videoContentDestination,
       resumable: true,
     })
+
+    console.log("result -->", result)
 
     // Unlink temp files
     const unlink = promisify(fs.unlink)
@@ -49,6 +54,7 @@ export async function uploadVideo({
 
     return { status: "Ok" }
   } catch (error) {
+    console.log("Error -->", error)
     throw error
   }
 }
