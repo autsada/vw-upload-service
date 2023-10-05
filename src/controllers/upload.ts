@@ -146,9 +146,7 @@ export async function uploadProfileImage({
     }
 
     const path = `profiles/${profileName}/profile/${filename}`
-    await bucket.file(path).save(buffer, {
-      metadata: { contentType: "image/jpeg" },
-    })
+    await bucket.file(path).save(buffer)
 
     const uploadedFile = bucket.file(path)
     const urls = await uploadedFile.getSignedUrl({
